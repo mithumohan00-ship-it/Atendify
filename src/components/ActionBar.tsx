@@ -5,7 +5,9 @@ import {
   Send, 
   RotateCcw, 
   Filter,
-  FileSpreadsheet
+  FileSpreadsheet,
+  MessageCircle,
+  Lock
 } from 'lucide-react';
 import { useAttendance } from '../context/AttendanceContext';
 import { AttendanceStatus } from '../types';
@@ -29,10 +31,14 @@ export const ActionBar: React.FC<ActionBarProps> = ({
     resetAttendance, 
     students, 
     attendanceMap,
-    setIsImportModalOpen
+    setIsImportModalOpen,
+    setIsBranch2GroupModalOpen,
+    activeTrainer,
+    isBranch2Trainer
   } = useAttendance();
 
   const absentCount = students.filter(s => attendanceMap[s.id]?.status === 'absent').length;
+  const isBranch2 = isBranch2Trainer(activeTrainer);
 
   return (
     <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 mb-5">
@@ -119,6 +125,28 @@ export const ActionBar: React.FC<ActionBarProps> = ({
         >
           <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           <span>Import Excel</span>
+        </button>
+
+        {/* Branch 2 WhatsApp Daily Absentees Sharing */}
+        <button
+          onClick={() => setIsBranch2GroupModalOpen(true)}
+          className={`flex-1 sm:flex-none inline-flex items-center justify-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all active:scale-95 whitespace-nowrap cursor-pointer shadow-2xs ${
+            isBranch2
+              ? 'bg-[#25D366]/15 hover:bg-[#25D366]/25 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+              : 'bg-neutral-100 dark:bg-neutral-900 text-neutral-400 dark:text-neutral-500 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-200/60 dark:hover:bg-neutral-800'
+          }`}
+          title={
+            isBranch2
+              ? 'Share daily absentees list to Branch 2 WhatsApp Group'
+              : `Restricted to Branch 2 trainers (${activeTrainer?.name} is in ${activeTrainer?.branch || 'Branch 1'})`
+          }
+        >
+          {isBranch2 ? (
+            <MessageCircle className="w-3.5 h-3.5 text-[#25D366] fill-[#25D366]" />
+          ) : (
+            <Lock className="w-3.5 h-3.5 text-neutral-400" />
+          )}
+          <span>{isBranch2 ? 'Share Absentees (Branch 2)' : 'Branch 2 Group 🔒'}</span>
         </button>
 
       </div>

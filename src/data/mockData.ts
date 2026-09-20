@@ -8,7 +8,8 @@ export const INITIAL_TRAINERS: Trainer[] = [
     batch: 'Morning Cohort Alpha',
     room: 'Code Lab 01',
     email: 'marcus.vance@attendify.tech',
-    phone: '+1 (555) 101-2001'
+    phone: '+1 (555) 101-2001',
+    branch: 'Branch 2'
   },
   {
     id: 'trainer-sarah',
@@ -17,7 +18,8 @@ export const INITIAL_TRAINERS: Trainer[] = [
     batch: 'Advanced Track B',
     room: 'AI Research Suite',
     email: 'sarah.mitchell@attendify.tech',
-    phone: '+1 (555) 101-2002'
+    phone: '+1 (555) 101-2002',
+    branch: 'Branch 1'
   },
   {
     id: 'trainer-david',
@@ -26,7 +28,8 @@ export const INITIAL_TRAINERS: Trainer[] = [
     batch: 'Studio Fellowship',
     room: 'Creative Studio 4',
     email: 'david.chen@attendify.tech',
-    phone: '+1 (555) 101-2003'
+    phone: '+1 (555) 101-2003',
+    branch: 'Branch 2'
   },
   {
     id: 'trainer-elena',
@@ -35,7 +38,8 @@ export const INITIAL_TRAINERS: Trainer[] = [
     batch: 'Evening Intensive',
     room: 'Cloud Ops Lab',
     email: 'elena.rostova@attendify.tech',
-    phone: '+1 (555) 101-2004'
+    phone: '+1 (555) 101-2004',
+    branch: 'Branch 1'
   }
 ];
 

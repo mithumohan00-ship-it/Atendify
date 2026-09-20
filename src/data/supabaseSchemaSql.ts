@@ -12,8 +12,12 @@ CREATE TABLE IF NOT EXISTS public.trainers (
   room TEXT NOT NULL,
   email TEXT NOT NULL,
   phone TEXT NOT NULL,
+  branch TEXT DEFAULT 'Branch 2',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration support for existing trainers table:
+ALTER TABLE public.trainers ADD COLUMN IF NOT EXISTS branch TEXT DEFAULT 'Branch 2';
 
 -- 2. Students Table
 CREATE TABLE IF NOT EXISTS public.students (
@@ -100,12 +104,12 @@ CREATE POLICY "Allow public write on notification_settings" ON public.notificati
 -- Initial Seed Data
 -- ==============================================================================
 
-INSERT INTO public.trainers (id, name, specialization, batch, room, email, phone)
+INSERT INTO public.trainers (id, name, specialization, batch, room, email, phone, branch)
 VALUES 
-  ('trainer-marcus', 'Marcus Vance', 'Full Stack Engineering', 'Morning Cohort Alpha', 'Code Lab 01', 'marcus.vance@attendify.tech', '+1 (555) 101-2001'),
-  ('trainer-sarah', 'Dr. Sarah Mitchell', 'AI & Machine Learning', 'Advanced Track B', 'AI Research Suite', 'sarah.mitchell@attendify.tech', '+1 (555) 101-2002'),
-  ('trainer-david', 'David Chen', 'UI/UX & Product Design', 'Studio Fellowship', 'Creative Studio 4', 'david.chen@attendify.tech', '+1 (555) 101-2003'),
-  ('trainer-elena', 'Elena Rostova', 'Cloud & DevOps Architecture', 'Evening Intensive', 'Cloud Ops Lab', 'elena.rostova@attendify.tech', '+1 (555) 101-2004')
+  ('trainer-marcus', 'Marcus Vance', 'Full Stack Engineering', 'Morning Cohort Alpha', 'Code Lab 01', 'marcus.vance@attendify.tech', '+1 (555) 101-2001', 'Branch 2'),
+  ('trainer-sarah', 'Dr. Sarah Mitchell', 'AI & Machine Learning', 'Advanced Track B', 'AI Research Suite', 'sarah.mitchell@attendify.tech', '+1 (555) 101-2002', 'Branch 1'),
+  ('trainer-david', 'David Chen', 'UI/UX & Product Design', 'Studio Fellowship', 'Creative Studio 4', 'david.chen@attendify.tech', '+1 (555) 101-2003', 'Branch 2'),
+  ('trainer-elena', 'Elena Rostova', 'Cloud & DevOps Architecture', 'Evening Intensive', 'Cloud Ops Lab', 'elena.rostova@attendify.tech', '+1 (555) 101-2004', 'Branch 1')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.students (id, name, roll_number, trainer_id, gender, parent_name, parent_relation, parent_phone, parent_email)

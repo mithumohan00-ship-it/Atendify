@@ -12,9 +12,10 @@ import { AddStudentModal } from './components/AddStudentModal';
 import { ImportStudentsModal } from './components/ImportStudentsModal';
 import { EditTrainerModal } from './components/EditTrainerModal';
 import { DatabaseModal } from './components/DatabaseModal';
+import { Branch2AbsenteesShareModal } from './components/Branch2AbsenteesShareModal';
 import { Toast } from './components/Toast';
 import { AttendanceStatus } from './types';
-import { Database, ShieldCheck, Briefcase, Pencil } from 'lucide-react';
+import { Database, ShieldCheck, Briefcase, Pencil, MessageCircle } from 'lucide-react';
 import { isSupabaseConfigured } from './services/supabaseClient';
 
 const AttendanceDashboard: React.FC = () => {
@@ -25,7 +26,8 @@ const AttendanceDashboard: React.FC = () => {
     selectedDate, 
     dbStatus, 
     setIsDbModalOpen,
-    openEditTrainerModal
+    openEditTrainerModal,
+    isBranch2Trainer
   } = useAttendance();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<AttendanceStatus | 'all'>('all');
@@ -64,6 +66,16 @@ const AttendanceDashboard: React.FC = () => {
               <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
                 <Briefcase className="w-3 h-3 text-neutral-400" />
                 <span>{activeTrainer?.specialization}</span>
+              </span>
+              <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-xs font-medium border ${
+                isBranch2Trainer(activeTrainer)
+                  ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'
+                  : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'
+              }`}>
+                {isBranch2Trainer(activeTrainer) && (
+                  <MessageCircle className="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" />
+                )}
+                <span>{activeTrainer?.branch || 'Branch 2'}</span>
               </span>
               {activeTrainer && (
                 <button
@@ -170,6 +182,7 @@ const MainRouter: React.FC = () => {
       <DatabaseModal />
       <EditTrainerModal />
       <ImportStudentsModal />
+      <Branch2AbsenteesShareModal />
       <Toast />
     </>
   );

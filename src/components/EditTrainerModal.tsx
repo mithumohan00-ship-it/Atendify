@@ -29,7 +29,8 @@ export const EditTrainerModal: React.FC = () => {
     batch: '',
     room: '',
     email: '',
-    phone: ''
+    phone: '',
+    branch: 'Branch 2'
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -44,7 +45,8 @@ export const EditTrainerModal: React.FC = () => {
         batch: editingTrainer.batch || '',
         room: editingTrainer.room || '',
         email: editingTrainer.email || '',
-        phone: editingTrainer.phone || ''
+        phone: editingTrainer.phone || '',
+        branch: editingTrainer.branch || 'Branch 2'
       });
       setShowDeleteConfirm(false);
     }
@@ -66,7 +68,8 @@ export const EditTrainerModal: React.FC = () => {
         batch: formData.batch.trim() || 'General Batch',
         room: formData.room.trim() || 'Lab 1',
         email: formData.email.trim(),
-        phone: formData.phone.trim()
+        phone: formData.phone.trim(),
+        branch: formData.branch || 'Branch 2'
       });
       setIsEditTrainerModalOpen(false);
     } finally {
@@ -143,6 +146,26 @@ export const EditTrainerModal: React.FC = () => {
                 className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:ring-1 focus:ring-neutral-400 text-xs"
               />
             </div>
+          </div>
+
+          {/* Branch Selection */}
+          <div>
+            <label className="block text-neutral-700 dark:text-neutral-300 mb-1 font-medium flex items-center justify-between">
+              <span>Branch Assignment *</span>
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal">
+                Branch 2 has WhatsApp Group access
+              </span>
+            </label>
+            <select
+              value={formData.branch}
+              onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
+              className="w-full p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:ring-1 focus:ring-neutral-400 text-xs font-medium cursor-pointer"
+            >
+              <option value="Branch 2">Branch 2 (Has WhatsApp Group Sharing Access)</option>
+              <option value="Branch 1">Branch 1</option>
+              <option value="Branch 3">Branch 3</option>
+              <option value="Main Campus">Main Campus</option>
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

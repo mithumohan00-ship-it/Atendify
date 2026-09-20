@@ -52,7 +52,10 @@ class AttendanceService {
       try {
         const { data, error } = await supabase!.from('trainers').select('*').order('name');
         if (!error && data && data.length > 0) {
-          return data as Trainer[];
+          return (data as any[]).map(t => ({
+            ...t,
+            branch: t.branch || (t.name === 'Dr. Sarah Mitchell' || t.name === 'Elena Rostova' ? 'Branch 1' : 'Branch 2')
+          })) as Trainer[];
         }
       } catch (e) {
         console.warn('Supabase query failed, falling back to local cache', e);
@@ -64,7 +67,13 @@ class AttendanceService {
       localStorage.setItem(STORAGE_KEYS.TRAINERS, JSON.stringify(INITIAL_TRAINERS));
       return INITIAL_TRAINERS;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    const upgraded = parsed.map((t: any) => ({
+      ...t,
+      branch: t.branch || (t.name === 'Dr. Sarah Mitchell' || t.name === 'Elena Rostova' ? 'Branch 1' : 'Branch 2')
+    }));
+    localStorage.setItem(STORAGE_KEYS.TRAINERS, JSON.stringify(upgraded));
+    return upgraded;
   }
 
   async addTrainer(trainerData: Omit<Trainer, 'id'>): Promise<Trainer> {

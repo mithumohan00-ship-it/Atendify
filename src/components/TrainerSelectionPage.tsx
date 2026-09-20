@@ -16,7 +16,8 @@ import {
   AlertCircle,
   Mail,
   Database,
-  Pencil
+  Pencil,
+  MessageCircle
 } from 'lucide-react';
 import { useAttendance } from '../context/AttendanceContext';
 import { AddTrainerModal } from './AddTrainerModal';
@@ -35,7 +36,8 @@ export const TrainerSelectionPage: React.FC = () => {
     toggleDarkMode,
     dbStatus,
     setIsDbModalOpen,
-    openEditTrainerModal
+    openEditTrainerModal,
+    isBranch2Trainer
   } = useAttendance();
 
   const shiftDate = (offset: number) => {
@@ -210,11 +212,23 @@ export const TrainerSelectionPage: React.FC = () => {
                 className="group relative bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-700 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
               >
                 <div>
-                  {/* Top Bar: Trainer Batch Badge & Roll Status */}
+                  {/* Top Bar: Trainer Batch & Branch Badge & Roll Status */}
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700/60">
-                      {trainer.batch}
-                    </span>
+                    <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                      <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200/60 dark:border-neutral-700/60">
+                        {trainer.batch}
+                      </span>
+                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md border flex items-center space-x-1 ${
+                        isBranch2Trainer(trainer)
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'
+                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'
+                      }`}>
+                        {isBranch2Trainer(trainer) && (
+                          <MessageCircle className="w-3 h-3 fill-current text-emerald-600 dark:text-emerald-400" />
+                        )}
+                        <span>{trainer.branch || 'Branch 2'}</span>
+                      </span>
+                    </div>
 
                     <div className="flex items-center space-x-1.5">
                       {/* Status Pill */}

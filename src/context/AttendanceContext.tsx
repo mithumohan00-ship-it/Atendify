@@ -68,12 +68,18 @@ interface AttendanceContextType {
   setIsAddTrainerModalOpen: (open: boolean) => void;
   isDbModalOpen: boolean;
   setIsDbModalOpen: (open: boolean) => void;
+  isBranch2GroupModalOpen: boolean;
+  setIsBranch2GroupModalOpen: (open: boolean) => void;
+  isBranch2Trainer: (trainer?: Trainer | null) => boolean;
+  generateDailyAbsenteesText: (trainerOverride?: Trainer | null) => string;
   dbStatus: { configured: boolean; connected: boolean; hasTables: boolean; checking: boolean; error?: string };
   checkDbStatus: () => Promise<void>;
   toastMessage: { text: string; type: 'info' | 'success' | 'alert' } | null;
   showToast: (text: string, type?: 'info' | 'success' | 'alert') => void;
   refreshData: () => Promise<void>;
 }
+
+export const BRANCH_2_WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/IgiPVOoEIMz4iFPNQ0Of4k?mode=gi_t';
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
 
@@ -116,6 +122,7 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
   const [editingTrainer, setEditingTrainer] = useState<Trainer | null>(null);
   const [isEditTrainerModalOpen, setIsEditTrainerModalOpen] = useState(false);
   const [isDbModalOpen, setIsDbModalOpen] = useState(false);
+  const [isBranch2GroupModalOpen, setIsBranch2GroupModalOpen] = useState(false);
 
   const openEditTrainerModal = (trainer: Trainer) => {
     setEditingTrainer(trainer);
@@ -427,6 +434,58 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
     showToast('Notification preferences saved', 'success');
   };
 
+  // Check if trainer belongs to Branch 2
+  const isBranch2Trainer = useCallback((trainer?: Trainer | null) => {
+    const target = trainer || activeTrainer;
+    if (!target || !target.branch) return false;
+    const b = target.branch.toLowerCase().trim();
+    return b.includes('branch 2') || b === '2' || b.includes('b2');
+  }, [activeTrainer]);
+
+  // Generate WhatsApp Markdown formatted daily absentees report
+  const generateDailyAbsenteesText = useCallback((trainerOverride?: Trainer | null) => {
+    const currentTrainer = trainerOverride || activeTrainer;
+    if (!currentTrainer) return '';
+
+    const trainerStudents = currentTrainer.id === activeTrainer?.id 
+      ? students 
+      : allStudents.filter(s => s.trainerId === currentTrainer.id);
+
+    const absentees = trainerStudents.filter(s => attendanceMap[s.id]?.status === 'absent');
+    const presentCount = trainerStudents.filter(s => attendanceMap[s.id]?.status === 'present').length;
+    const lateCount = trainerStudents.filter(s => attendanceMap[s.id]?.status === 'late').length;
+    const total = trainerStudents.length;
+    const rate = total > 0 ? Math.round((presentCount / total) * 100) : 0;
+
+    let report = `📋 *ATTENDIFY — DAILY ABSENTEES REPORT*\n`;
+    report += `🏢 *Branch:* ${currentTrainer.branch || 'Branch 2'}\n`;
+    report += `📅 *Date:* ${selectedDate}\n`;
+    report += `👤 *Trainer:* ${currentTrainer.name} (${currentTrainer.specialization})\n`;
+    report += `📍 *Batch & Room:* ${currentTrainer.batch} • ${currentTrainer.room}\n\n`;
+
+    report += `📊 *Attendance Summary:*\n`;
+    report += `• Total Enrolled: ${total}\n`;
+    report += `• Present: ${presentCount} (${rate}%)\n`;
+    report += `• Absent: ${absentees.length}\n`;
+    if (lateCount > 0) report += `• Late: ${lateCount}\n`;
+    report += `\n`;
+
+    if (absentees.length === 0) {
+      report += `✅ *Absentees:* All students are present or excused today! 🎉\n`;
+    } else {
+      report += `⚠️ *Daily Absentees List (${absentees.length}):*\n`;
+      absentees.forEach((student, idx) => {
+        report += `${idx + 1}. *${student.name}* (${student.rollNumber})\n`;
+        report += `   ↳ Parent: ${student.parentName} (${student.parentRelation}) • ${student.parentPhone}\n`;
+      });
+    }
+
+    report += `\n💬 *Branch 2 Attendance Group:* ${BRANCH_2_WHATSAPP_GROUP_URL}\n`;
+    report += `_Generated via Attendify • Developed by Mithu Mohan_`;
+
+    return report;
+  }, [activeTrainer, students, allStudents, attendanceMap, selectedDate]);
+
   return (
     <AttendanceContext.Provider
       value={{
@@ -476,6 +535,10 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
         deleteTrainer,
         isDbModalOpen,
         setIsDbModalOpen,
+        isBranch2GroupModalOpen,
+        setIsBranch2GroupModalOpen,
+        isBranch2Trainer,
+        generateDailyAbsenteesText,
         dbStatus,
         checkDbStatus,
         toastMessage,

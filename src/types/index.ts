@@ -51,6 +51,7 @@ export interface Trainer {
   room: string;
   email: string;
   phone: string;
+  branch?: string; // e.g. 'Branch 2' | 'Branch 1'
 }
 
 export interface NotificationSettings {
