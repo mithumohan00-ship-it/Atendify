@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
-import { X, UserPlus, Phone, Mail, UserCheck } from 'lucide-react';
+import { X, UserPlus, Phone, Mail, UserCheck, FileSpreadsheet } from 'lucide-react';
 import { useAttendance } from '../context/AttendanceContext';
 
 export const AddStudentModal: React.FC = () => {
-  const { isAddStudentModalOpen, setIsAddStudentModalOpen, trainers, activeTrainer, addStudent } = useAttendance();
+  const { 
+    isAddStudentModalOpen, 
+    setIsAddStudentModalOpen, 
+    setIsImportModalOpen,
+    trainers, 
+    activeTrainer, 
+    addStudent 
+  } = useAttendance();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -73,6 +80,24 @@ export const AddStudentModal: React.FC = () => {
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs">
           
+          {/* Import from Excel shortcut */}
+          <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-[11px] text-neutral-600 dark:text-neutral-400">
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>Have an Excel or CSV roster?</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setIsAddStudentModalOpen(false);
+                setIsImportModalOpen(true);
+              }}
+              className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+            >
+              Import Excel &rarr;
+            </button>
+          </div>
+
           {/* Trainer Assignment */}
           <div>
             <label className="block text-neutral-700 dark:text-neutral-300 mb-1 font-medium">

@@ -180,10 +180,12 @@ export const LandingPage: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-neutral-200 dark:border-neutral-800 py-6 text-center text-xs text-neutral-400">
+      <footer className="border-t border-neutral-200 dark:border-neutral-800 py-6 text-xs text-neutral-500 dark:text-neutral-400">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>Attendify &bull; Minimalist Attendance Platform</span>
-          <span>Click Check In above to get started</span>
+          <span className="font-medium text-neutral-700 dark:text-neutral-300">
+            Developed by <span className="font-semibold text-neutral-950 dark:text-white">Mithu Mohan</span>
+          </span>
         </div>
       </footer>
 

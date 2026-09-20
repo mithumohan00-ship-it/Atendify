@@ -8,7 +8,8 @@ import {
   Sun, 
   UserPlus, 
   UserCheck,
-  Database
+  Database,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useAttendance } from '../context/AttendanceContext';
 
@@ -24,6 +25,7 @@ export const Header: React.FC = () => {
     toggleDarkMode, 
     setIsNotificationDrawerOpen,
     setIsAddStudentModalOpen,
+    setIsImportModalOpen,
     setCurrentView,
     dbStatus,
     setIsDbModalOpen 
@@ -139,10 +141,20 @@ export const Header: React.FC = () => {
             {/* Add Student Button */}
             <button
               onClick={() => setIsAddStudentModalOpen(true)}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-all shadow-sm active:scale-95"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-all shadow-sm active:scale-95 cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Add Student</span>
+            </button>
+
+            {/* Import from Excel Button */}
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 transition-all active:scale-95 cursor-pointer"
+              title="Import students from Excel or CSV spreadsheet"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="hidden sm:inline">Import Excel</span>
             </button>
 
             {/* Supabase Database Status Trigger */}

@@ -224,6 +224,42 @@ class AttendanceService {
     return newStudent;
   }
 
+  async addStudentsBatch(studentsData: Omit<Student, 'id'>[]): Promise<Student[]> {
+    const timestamp = Date.now();
+    const newStudents: Student[] = studentsData.map((data, index) => ({
+      ...data,
+      id: `stu-${timestamp}-${index}`
+    }));
+
+    if (this.isUsingDatabase() && newStudents.length > 0) {
+      try {
+        const rows = newStudents.map(s => ({
+          id: s.id,
+          name: s.name,
+          roll_number: s.rollNumber,
+          trainer_id: s.trainerId,
+          gender: s.gender || 'other',
+          parent_name: s.parentName,
+          parent_relation: s.parentRelation || 'Guardian',
+          parent_phone: s.parentPhone,
+          parent_email: s.parentEmail || ''
+        }));
+
+        const { error } = await supabase!.from('students').insert(rows);
+        if (error) {
+          console.warn('Supabase batch student insert failed, saving locally', error);
+        }
+      } catch (e) {
+        console.warn('Supabase batch student insert error, saving locally', e);
+      }
+    }
+
+    const currentStudents = await this.getStudents();
+    const updated = [...newStudents, ...currentStudents];
+    localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(updated));
+    return newStudents;
+  }
+
   // --- Attendance Records ---
   async getAttendance(date: string, trainerId: string): Promise<Record<string, AttendanceRecord>> {
     if (this.isUsingDatabase()) {

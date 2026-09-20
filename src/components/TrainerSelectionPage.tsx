@@ -321,6 +321,16 @@ export const TrainerSelectionPage: React.FC = () => {
 
       </main>
 
+      {/* Footer */}
+      <footer className="border-t border-neutral-200 dark:border-neutral-800 py-6 text-xs text-neutral-500 dark:text-neutral-400 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>Attendify &copy; {new Date().getFullYear()} &bull; Trainer Cohorts &amp; Attendance</span>
+          <span className="font-medium text-neutral-700 dark:text-neutral-300">
+            Developed by <span className="font-semibold text-neutral-950 dark:text-white">Mithu Mohan</span>
+          </span>
+        </div>
+      </footer>
+
       <AddTrainerModal />
       <EditTrainerModal />
     </div>

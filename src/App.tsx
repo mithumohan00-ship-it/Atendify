@@ -9,6 +9,7 @@ import { AttendanceList } from './components/AttendanceList';
 import { ParentSimulatorModal } from './components/ParentSimulatorModal';
 import { NotificationDrawer } from './components/NotificationDrawer';
 import { AddStudentModal } from './components/AddStudentModal';
+import { ImportStudentsModal } from './components/ImportStudentsModal';
 import { EditTrainerModal } from './components/EditTrainerModal';
 import { DatabaseModal } from './components/DatabaseModal';
 import { Toast } from './components/Toast';
@@ -141,8 +142,13 @@ const AttendanceDashboard: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-neutral-200 dark:border-neutral-800/80 py-5 text-center text-[11px] text-neutral-400">
-        <p>Attendify &copy; {new Date().getFullYear()} &bull; Minimalist Attendance & Automated Parent Notification Platform</p>
+      <footer className="border-t border-neutral-200 dark:border-neutral-800/80 py-6 text-xs text-neutral-500 dark:text-neutral-400">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>Attendify &copy; {new Date().getFullYear()} &bull; Minimalist Attendance &amp; Parent Alert Platform</span>
+          <span className="font-medium text-neutral-700 dark:text-neutral-300">
+            Developed by <span className="font-semibold text-neutral-950 dark:text-white">Mithu Mohan</span>
+          </span>
+        </div>
       </footer>
 
       {/* Interactive Overlays */}
@@ -163,6 +169,7 @@ const MainRouter: React.FC = () => {
       {currentView === 'attendance' && <AttendanceDashboard />}
       <DatabaseModal />
       <EditTrainerModal />
+      <ImportStudentsModal />
       <Toast />
     </>
   );

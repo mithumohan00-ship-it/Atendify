@@ -4,7 +4,8 @@ import {
   CheckCheck, 
   Send, 
   RotateCcw, 
-  Filter
+  Filter,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useAttendance } from '../context/AttendanceContext';
 import { AttendanceStatus } from '../types';
@@ -27,7 +28,8 @@ export const ActionBar: React.FC<ActionBarProps> = ({
     notifyAllAbsent, 
     resetAttendance, 
     students, 
-    attendanceMap 
+    attendanceMap,
+    setIsImportModalOpen
   } = useAttendance();
 
   const absentCount = students.filter(s => attendanceMap[s.id]?.status === 'absent').length;
@@ -101,10 +103,22 @@ export const ActionBar: React.FC<ActionBarProps> = ({
         {/* Reset Attendance */}
         <button
           onClick={resetAttendance}
-          className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shrink-0"
+          className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shrink-0 cursor-pointer"
           title="Reset Attendance for Selected Date"
         >
           <RotateCcw className="w-3.5 h-3.5" />
+        </button>
+
+        <div className="h-5 w-[1px] bg-neutral-200 dark:border-neutral-800 hidden sm:block" />
+
+        {/* Import from Excel */}
+        <button
+          onClick={() => setIsImportModalOpen(true)}
+          className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors active:scale-95 whitespace-nowrap cursor-pointer shadow-2xs"
+          title="Import students from Excel or CSV spreadsheet"
+        >
+          <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span>Import Excel</span>
         </button>
 
       </div>

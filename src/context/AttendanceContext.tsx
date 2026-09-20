@@ -49,6 +49,7 @@ interface AttendanceContextType {
   notifyAllAbsent: () => Promise<void>;
   sendSingleNotification: (studentId: string, channel?: NotificationChannel) => Promise<ParentNotification | null>;
   addStudent: (student: Omit<Student, 'id'>) => Promise<Student>;
+  importStudentsBatch: (students: Omit<Student, 'id'>[]) => Promise<Student[]>;
   getTrainerSummary: (trainerId: string) => TrainerSummary;
   // UI state
   isDarkMode: boolean;
@@ -61,6 +62,8 @@ interface AttendanceContextType {
   setIsNotificationDrawerOpen: (open: boolean) => void;
   isAddStudentModalOpen: boolean;
   setIsAddStudentModalOpen: (open: boolean) => void;
+  isImportModalOpen: boolean;
+  setIsImportModalOpen: (open: boolean) => void;
   isAddTrainerModalOpen: boolean;
   setIsAddTrainerModalOpen: (open: boolean) => void;
   isDbModalOpen: boolean;
@@ -108,6 +111,7 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
   const [activeSimulatorStudent, setActiveSimulatorStudent] = useState<Student | null>(null);
   const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAddTrainerModalOpen, setIsAddTrainerModalOpen] = useState(false);
   const [editingTrainer, setEditingTrainer] = useState<Trainer | null>(null);
   const [isEditTrainerModalOpen, setIsEditTrainerModalOpen] = useState(false);
@@ -408,6 +412,14 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
     return created;
   };
 
+  // Import batch of students from Excel/CSV
+  const importStudentsBatch = async (studentsData: Omit<Student, 'id'>[]) => {
+    const created = await attendanceService.addStudentsBatch(studentsData);
+    await refreshData();
+    showToast(`Successfully imported ${created.length} students`, 'success');
+    return created;
+  };
+
   // Update notification templates and settings
   const updateNotificationSettings = async (settings: NotificationSettings) => {
     const updated = await attendanceService.updateSettings(settings);
@@ -439,6 +451,7 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
         notifyAllAbsent,
         sendSingleNotification,
         addStudent,
+        importStudentsBatch,
         getTrainerSummary,
         isDarkMode,
         toggleDarkMode,
@@ -450,6 +463,8 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
         setIsNotificationDrawerOpen,
         isAddStudentModalOpen,
         setIsAddStudentModalOpen,
+        isImportModalOpen,
+        setIsImportModalOpen,
         isAddTrainerModalOpen,
         setIsAddTrainerModalOpen,
         editingTrainer,
