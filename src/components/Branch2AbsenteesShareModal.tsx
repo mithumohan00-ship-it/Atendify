@@ -11,7 +11,9 @@ import {
   Building2,
   User,
   SendHorizontal,
-  Info
+  Info,
+  UserX,
+  AlertCircle
 } from 'lucide-react';
 import { useAttendance, BRANCH_2_WHATSAPP_GROUP_URL } from '../context/AttendanceContext';
 import { Student, Trainer } from '../types';
@@ -30,12 +32,13 @@ export const Branch2AbsenteesShareModal: React.FC = () => {
     attendanceMap, 
     allTrainerAttendance,
     selectedDate,
-    showToast
+    showToast,
+    markAttendance
   } = useAttendance();
 
   const [reportMode, setReportMode] = useState<'overall' | 'trainer'>('overall');
   const [copied, setCopied] = useState(false);
-  const [isForwarding, setIsForwarding] = useState(false);
+  const [showPasteGuide, setShowPasteGuide] = useState(false);
 
   if (!isBranch2GroupModalOpen || !activeTrainer) return null;
 
@@ -76,48 +79,31 @@ export const Branch2AbsenteesShareModal: React.FC = () => {
     }
   };
 
-  // Primary Action: Forward message directly to WhatsApp with pre-filled absentees
+  // Primary Action: Forward message directly to WhatsApp with pre-filled absentees in the message box
   const handleForwardToWhatsApp = async () => {
-    setIsForwarding(true);
     try {
-      // 1. Always copy text to clipboard as guaranteed fallback
+      // 1. Copy text to clipboard as guaranteed fallback
       await navigator.clipboard.writeText(reportText);
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
 
-      // 2. Try native Web Share API if supported (works beautifully on mobile browsers)
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: reportMode === 'overall' ? 'Branch 2 Overall Daily Absentees' : `${activeTrainer.name} Daily Absentees`,
-            text: reportText
-          });
-          showToast('Shared successfully via WhatsApp!', 'success');
-          return;
-        } catch (err: any) {
-          // If user cancelled the share dialog, do nothing
-          if (err?.name === 'AbortError') return;
-        }
-      }
-
-      // 3. Fallback: Open WhatsApp universal send link which opens WhatsApp with pre-filled message
+      // 2. Open WhatsApp universal send URL directly without system interceptors
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(reportText)}`;
       window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-      showToast('WhatsApp opened with absentees list loaded! Select Branch 2 group.', 'success');
+      showToast('WhatsApp opened! The absentees list is loaded in the message box. Select Branch 2 group to send.', 'success');
     } catch {
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(reportText)}`;
       window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-    } finally {
-      setIsForwarding(false);
     }
   };
 
-  // Secondary Action: Open Branch 2 group invite link directly
+  // Secondary Action: Open Branch 2 group invite link directly with paste guidance
   const handleOpenGroupDirectly = async () => {
     try {
       await navigator.clipboard.writeText(reportText);
       setCopied(true);
-      showToast('Absentees list copied! In WhatsApp group, press Paste (Ctrl+V / Cmd+V) and Send.', 'info');
+      setShowPasteGuide(true);
+      showToast('Absentees list copied! In WhatsApp group, press Cmd+V (Paste) in the message box.', 'info');
       setTimeout(() => setCopied(false), 3000);
       window.open(BRANCH_2_WHATSAPP_GROUP_URL, '_blank', 'noopener,noreferrer');
     } catch {
@@ -249,6 +235,55 @@ export const Branch2AbsenteesShareModal: React.FC = () => {
               </button>
             </div>
 
+            {/* Zero Absentees Notification & Helper */}
+            {displayedAbsenteesCount === 0 && (
+              <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs space-y-2">
+                <div className="flex items-start space-x-2">
+                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-amber-950 dark:text-amber-200">
+                      No students are currently marked "Absent" on {selectedDate}
+                    </p>
+                    <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 mt-0.5 leading-relaxed">
+                      All students are marked present or unmarked. To populate the message with specific absent student names and parent contacts, mark students as <strong>Absent</strong> in the attendance roster.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-1 flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const studentToMark = students[0] || allStudents.find(s => s.trainerId === activeTrainer.id);
+                      if (studentToMark) {
+                        await markAttendance(studentToMark.id, 'absent');
+                        showToast(`Marked ${studentToMark.name} as Absent for testing`, 'alert');
+                      }
+                    }}
+                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-medium text-[11px] transition-colors cursor-pointer shadow-2xs"
+                  >
+                    <UserX className="w-3.5 h-3.5" />
+                    <span>Mark a Student Absent to Test List</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Paste Guide Banner if group link clicked */}
+            {showPasteGuide && (
+              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-xs text-emerald-950 dark:text-emerald-200 flex items-start space-x-2.5 animate-fade-in shadow-xs">
+                <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-semibold text-emerald-900 dark:text-emerald-100">
+                    Absentees List Copied to Clipboard!
+                  </p>
+                  <p className="text-[11px] leading-relaxed text-emerald-800 dark:text-emerald-300">
+                    Now inside the WhatsApp group, click inside the <strong>"Type a message"</strong> box at the bottom and press <kbd className="px-1.5 py-0.5 rounded bg-emerald-200 dark:bg-emerald-800 font-mono text-[10px] font-bold">Cmd + V</kbd> (or right-click &gt; Paste) and hit Send!
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Status & Scope Banner */}
             <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60">
               <div className="flex items-center space-x-2">
@@ -284,9 +319,9 @@ export const Branch2AbsenteesShareModal: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <span className="font-semibold text-neutral-700 dark:text-neutral-300 flex items-center space-x-1.5">
-                  <span>WhatsApp Formatted Text Preview</span>
+                  <span>WhatsApp Message Content</span>
                   <span className="text-[10px] text-neutral-400 font-normal">
-                    (Forwarded directly into WhatsApp)
+                    (Formatted with Bold and Details)
                   </span>
                 </span>
                 <button
@@ -302,7 +337,7 @@ export const Branch2AbsenteesShareModal: React.FC = () => {
                   ) : (
                     <>
                       <Copy className="w-3.5 h-3.5" />
-                      <span>Copy Full Text</span>
+                      <span>Copy Text</span>
                     </>
                   )}
                 </button>
@@ -345,19 +380,22 @@ export const Branch2AbsenteesShareModal: React.FC = () => {
                   ))}
                 </div>
               </div>
-            ) : (
-              <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800 flex items-center space-x-2 text-xs text-neutral-600 dark:text-neutral-300">
-                <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Zero absentees recorded today. Perfect attendance across batches! 🎉</span>
-              </div>
-            )}
+            ) : null}
 
-            {/* Helper Instructions Tip */}
-            <div className="p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/40 text-[11px] text-blue-900 dark:text-blue-300 flex items-start space-x-2">
-              <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-semibold">How forwarding works:</span> Clicking <span className="font-semibold text-emerald-700 dark:text-emerald-400">"Forward to WhatsApp Group"</span> opens WhatsApp with the complete absentees list pre-filled. Simply select the <strong>Branch 2</strong> group to send!
+            {/* How It Works Guide Box */}
+            <div className="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-800/50 text-[11px] text-blue-950 dark:text-blue-200 space-y-1.5">
+              <div className="flex items-center space-x-1.5 font-semibold text-blue-900 dark:text-blue-100">
+                <Info className="w-4 h-4 text-blue-500 shrink-0" />
+                <span>How to ensure the list appears in WhatsApp:</span>
               </div>
+              <ul className="space-y-1 pl-5 list-disc text-blue-800 dark:text-blue-300">
+                <li>
+                  <strong>Method 1 (Automatic Pre-fill):</strong> Click <strong>"Forward to WhatsApp"</strong>. WhatsApp will open with the complete text pre-filled in the message box. Select the <strong>Branch 2</strong> group and click Send.
+                </li>
+                <li>
+                  <strong>Method 2 (Group Link + Paste):</strong> Click <strong>"Open Group Chat"</strong>. The list is automatically copied. In the WhatsApp group, click the typing box and press <kbd className="px-1 py-0.2 rounded bg-blue-200 dark:bg-blue-900 font-mono text-[10px]">Cmd+V</kbd> to paste!
+                </li>
+              </ul>
             </div>
 
           </div>
@@ -370,7 +408,7 @@ export const Branch2AbsenteesShareModal: React.FC = () => {
             {/* Direct Group Open Link */}
             <button
               onClick={handleOpenGroupDirectly}
-              className="inline-flex items-center justify-center space-x-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
               title="Copies absentees and opens the official Branch 2 WhatsApp group chat"
             >
               <ExternalLink className="w-3.5 h-3.5 text-neutral-500" />
@@ -381,22 +419,21 @@ export const Branch2AbsenteesShareModal: React.FC = () => {
               {/* Copy Full Report Button */}
               <button
                 onClick={handleCopy}
-                className="inline-flex items-center justify-center space-x-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                className="inline-flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                 title="Copy formatted text to clipboard"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5 text-neutral-400" />}
-                <span>{copied ? 'Copied' : 'Copy'}</span>
+                <span>{copied ? 'Copied' : 'Copy Text'}</span>
               </button>
 
               {/* PRIMARY ACTION: Forward Absentees to WhatsApp */}
               <button
                 onClick={handleForwardToWhatsApp}
-                disabled={isForwarding}
                 className="flex-1 sm:flex-none inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 transition-all active:scale-95 cursor-pointer"
                 title="Opens WhatsApp directly with the absentees list pre-filled to forward to the Branch 2 group"
               >
                 <MessageCircle className="w-4 h-4 fill-current" />
-                <span>Forward Absentees to WhatsApp</span>
+                <span>Forward to WhatsApp</span>
                 <SendHorizontal className="w-3.5 h-3.5 ml-0.5" />
               </button>
             </div>
