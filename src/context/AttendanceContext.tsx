@@ -72,6 +72,8 @@ interface AttendanceContextType {
   setIsBranch2GroupModalOpen: (open: boolean) => void;
   isBranch2Trainer: (trainer?: Trainer | null) => boolean;
   generateDailyAbsenteesText: (trainerOverride?: Trainer | null) => string;
+  generateOverallBranch2AbsenteesText: () => string;
+  allTrainerAttendance: Record<string, Record<string, AttendanceRecord>>;
   dbStatus: { configured: boolean; connected: boolean; hasTables: boolean; checking: boolean; error?: string };
   checkDbStatus: () => Promise<void>;
   toastMessage: { text: string; type: 'info' | 'success' | 'alert' } | null;
@@ -486,6 +488,79 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
     return report;
   }, [activeTrainer, students, allStudents, attendanceMap, selectedDate]);
 
+  // Generate WhatsApp Markdown formatted OVERALL Branch 2 daily absentees report across all Branch 2 trainers
+  const generateOverallBranch2AbsenteesText = useCallback(() => {
+    const b2Trainers = trainers.filter(t => isBranch2Trainer(t));
+    if (b2Trainers.length === 0) return '';
+
+    let totalBranchStudents = 0;
+    let totalBranchPresent = 0;
+    let totalBranchAbsent = 0;
+    let totalBranchLate = 0;
+
+    const sections: { trainer: Trainer; absentees: Student[]; total: number; present: number }[] = [];
+
+    b2Trainers.forEach(trainer => {
+      const trainerStudents = allStudents.filter(s => s.trainerId === trainer.id);
+      const recs = (trainer.id === activeTrainer?.id ? attendanceMap : allTrainerAttendance[trainer.id]) || {};
+
+      const absentees = trainerStudents.filter(s => recs[s.id]?.status === 'absent');
+      const presents = trainerStudents.filter(s => recs[s.id]?.status === 'present');
+      const lates = trainerStudents.filter(s => recs[s.id]?.status === 'late');
+
+      totalBranchStudents += trainerStudents.length;
+      totalBranchPresent += presents.length;
+      totalBranchAbsent += absentees.length;
+      totalBranchLate += lates.length;
+
+      sections.push({
+        trainer,
+        absentees,
+        total: trainerStudents.length,
+        present: presents.length
+      });
+    });
+
+    const overallRate = totalBranchStudents > 0 
+      ? Math.round((totalBranchPresent / totalBranchStudents) * 100) 
+      : 0;
+
+    let report = `📋 *ATTENDIFY — BRANCH 2 OVERALL DAILY ABSENTEES REPORT*\n`;
+    report += `🏢 *Branch:* Branch 2\n`;
+    report += `📅 *Date:* ${selectedDate}\n`;
+    report += `👥 *Branch 2 Trainers:* ${b2Trainers.map(t => t.name).join(', ')}\n\n`;
+
+    report += `📊 *Branch 2 Overall Attendance Summary:*\n`;
+    report += `• Total Enrolled: ${totalBranchStudents}\n`;
+    report += `• Total Present: ${totalBranchPresent} (${overallRate}%)\n`;
+    report += `• Total Absent: ${totalBranchAbsent}\n`;
+    if (totalBranchLate > 0) report += `• Total Late: ${totalBranchLate}\n`;
+    report += `\n`;
+
+    if (totalBranchAbsent === 0) {
+      report += `✅ *Absentees:* Zero absentees recorded across all Branch 2 cohorts today! Perfect attendance across all batches. 🎉\n`;
+    } else {
+      report += `⚠️ *BRANCH 2 DAILY ABSENTEES LIST (${totalBranchAbsent} Students):*\n\n`;
+      let globalIndex = 1;
+      sections.forEach(({ trainer, absentees }) => {
+        if (absentees.length > 0) {
+          report += `*📍 ${trainer.name} — ${trainer.batch} (${trainer.room})*\n`;
+          absentees.forEach(student => {
+            report += `${globalIndex}. *${student.name}* (${student.rollNumber})\n`;
+            report += `   ↳ Parent: ${student.parentName} (${student.parentRelation}) • ${student.parentPhone}\n`;
+            globalIndex++;
+          });
+          report += `\n`;
+        }
+      });
+    }
+
+    report += `💬 *Official Branch 2 WhatsApp Group:* ${BRANCH_2_WHATSAPP_GROUP_URL}\n`;
+    report += `_Generated via Attendify • Developed by Mithu Mohan_`;
+
+    return report;
+  }, [trainers, allStudents, activeTrainer, attendanceMap, allTrainerAttendance, selectedDate, isBranch2Trainer]);
+
   return (
     <AttendanceContext.Provider
       value={{
@@ -539,6 +614,8 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
         setIsBranch2GroupModalOpen,
         isBranch2Trainer,
         generateDailyAbsenteesText,
+        generateOverallBranch2AbsenteesText,
+        allTrainerAttendance,
         dbStatus,
         checkDbStatus,
         toastMessage,

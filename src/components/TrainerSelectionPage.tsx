@@ -37,7 +37,8 @@ export const TrainerSelectionPage: React.FC = () => {
     dbStatus,
     setIsDbModalOpen,
     openEditTrainerModal,
-    isBranch2Trainer
+    isBranch2Trainer,
+    setIsBranch2GroupModalOpen
   } = useAttendance();
 
   const shiftDate = (offset: number) => {
@@ -188,14 +189,26 @@ export const TrainerSelectionPage: React.FC = () => {
             </p>
           </div>
 
-          {/* ADD TRAINER BUTTON */}
-          <button
-            onClick={() => setIsAddTrainerModalOpen(true)}
-            className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all shadow-sm active:scale-95 cursor-pointer self-start sm:self-auto"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Trainer</span>
-          </button>
+          <div className="flex items-center space-x-2.5 self-start sm:self-auto flex-wrap gap-y-2">
+            {/* SHARE BRANCH 2 ABSENTEES TO WHATSAPP */}
+            <button
+              onClick={() => setIsBranch2GroupModalOpen(true)}
+              className="inline-flex items-center space-x-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-[#25D366]/15 hover:bg-[#25D366]/25 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/80 transition-all shadow-xs active:scale-95 cursor-pointer"
+              title="Forward overall Branch 2 daily absentees list to official WhatsApp group"
+            >
+              <MessageCircle className="w-4 h-4 text-[#25D366] fill-[#25D366]" />
+              <span>Share Branch 2 Absentees</span>
+            </button>
+
+            {/* ADD TRAINER BUTTON */}
+            <button
+              onClick={() => setIsAddTrainerModalOpen(true)}
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all shadow-sm active:scale-95 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Trainer</span>
+            </button>
+          </div>
         </div>
 
         {/* Trainers Grid */}
